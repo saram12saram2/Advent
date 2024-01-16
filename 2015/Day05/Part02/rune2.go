@@ -50,3 +50,6 @@ func main() {
 		fmt.Printf("Number of nice strings: %d\n", niceCount)
 	}
 }
+
+
+// compile -> cat input.txt | go run your_program.go
