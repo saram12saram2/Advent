@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -12,7 +14,6 @@ func isVowel(ch rune) bool {
 func isNice(s string) bool {
 	vowelCount, doubleLetter, containsBadStr := 0, false, false
 
-	// Check for disallowed strings
 	for _, badStr := range []string{"ab", "cd", "pq", "xy"} {
 		if strings.Contains(s, badStr) {
 			containsBadStr = true
@@ -20,7 +21,6 @@ func isNice(s string) bool {
 		}
 	}
 
-	// Check for vowels and double letters
 	for i, ch := range s {
 		if isVowel(ch) {
 			vowelCount++
@@ -34,23 +34,22 @@ func isNice(s string) bool {
 }
 
 func main() {
-	strings := []string{
-		"uxcplgxnkwbdwhrp", "suerykeptdsutidb", "dmrtgdkaimrrwmej", "ztxhjwllrckhakut",
-		"gdnzurjbbwmgayrg", "gjdzbtrcxwprtery", "fbuqqaatackrvemm", "pcjhsshoveaodyko",
-		"lrpprussbesniilv", "mmsebhtqqjiqrusd", "vumllmrrdjgktmnb", "ptsqjcfbmgwdywgi",
-		"mmppavyjgcfebgpl", "zexyxksqrqyonhui", "npulalteaztqqnrl", "mscqpccetkktaknl",
-		"ydssjjlfejdxrztr", "jdygsbqimbxljuue", "ortsthjkmlonvgci", "jfjhsbxeorhgmstc",
-		"vdrqdpojfuubjbbg", "xxxddetvrlpzsfpq", "zpjxvrmaorjpwegy", "laxrlkntrukjcswz",
-		"pbqoungonelthcke", "niexeyzvrtrlgfzw", "zuetendekblknqng", "lyazavyoweyuvfye",
-		"tegbldtkagfwlerf", "xckozymymezzarpy",
-	}
+	scanner := bufio.NewScanner(os.Stdin)
 
 	niceCount := 0
-	for _, s := range strings {
-		if isNice(s) {
+	for scanner.Scan() {
+		line := scanner.Text()
+		if isNice(line) {
 			niceCount++
 		}
 	}
 
-	fmt.Printf("Number of nice strings: %d\n", niceCount)
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	} else {
+		fmt.Printf("Number of nice strings: %d\n", niceCount)
+	}
 }
+
+
+// compile -> cat input.txt | go run your_program.go
