@@ -48,3 +48,10 @@ fun main(args: Array<String>) {
     // Вывод количества "nice" строк
     println("Количество хороших строк: $niceCount")
 }
+
+/*
+Compile :
+kotlinc NiceStringsChecker.kt -include-runtime -d NiceStringsChecker.jar
+Run:
+java -jar NiceStringsChecker.jar
+*/
