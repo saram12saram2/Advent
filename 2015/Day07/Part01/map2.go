@@ -27,7 +27,7 @@ func main() {
 
     // Calculate the signal for wire 'a' the first time
     signalA := getSignal("a", instructions, signals)
-    fmt.Println("First signal provided to wire 'a':", signalA)
+    // fmt.Println("First signal provided to wire 'a':", signalA)
 
     // Reset signals and override wire 'b' with the first signal of wire 'a'
     signals = make(map[string]uint16)
