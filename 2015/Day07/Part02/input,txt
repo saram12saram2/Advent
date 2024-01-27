@@ -317,3 +317,23 @@ aw AND ay -> az
 jc AND je -> jf
 lb OR la -> lc
 NOT cn -> co 
+kh LSHIFT 1 -> lb
+1 AND jj -> jk
+y OR ae -> af
+ck AND cl -> cn
+kk OR kv -> kw
+NOT cv -> cw
+kl AND kr -> kt
+iu OR jf -> jg
+at AND az -> bb
+jp RSHIFT 2 -> jq
+iv AND jb -> jd
+jn OR jo -> jp
+x OR ai -> aj
+ba AND bc -> bd
+jl OR jk -> jm
+b RSHIFT 1 -> v
+o AND q -> r
+NOT p -> q
+k AND m -> n
+as RSHIFT 2 -> at
