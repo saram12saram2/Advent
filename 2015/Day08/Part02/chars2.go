@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -15,17 +14,13 @@ func main() {
 	}
 	defer file.Close()
 
-	var totalOriginalChars, totalEncodedChars int
+	var totalOriginal, totalEncoded int
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		totalOriginalChars += len(line)
-
-		// Encode the line
-		encodedLine := "\"" + strings.ReplaceAll(line, "\\", "\\\\")
-		encodedLine = strings.ReplaceAll(encodedLine, "\"", "\\\"") + "\""
-
-		totalEncodedChars += len(encodedLine)
+		encoded := encodeString(line)
+		totalOriginal += len(line)
+		totalEncoded += len(encoded)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -33,5 +28,20 @@ func main() {
 		return
 	}
 
-	fmt.Println("Total Encoded Characters - Total Original Characters:", totalEncodedChars-totalOriginalChars)
+	fmt.Println("Total difference:", totalEncoded-totalOriginal)
+}
+
+// encodeString returns the Go encoded representation of a string literal
+func encodeString(s string) string {
+	encoded := "\""
+	for _, c := range s {
+		switch c {
+		case '\\', '"':
+			encoded += "\\" + string(c)
+		default:
+			encoded += string(c)
+		}
+	}
+	encoded += "\""
+	return encoded
 }
