@@ -1,60 +1,64 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"io/ioutil"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 func main() {
-	file, err := os.Open("input.txt")
+	// Read input file line by line
+	input := readFileLineByLine("input.txt")
+
+	var occurrences [][]string
+	for _, line := range input {
+		occurrences = append(occurrences, findValidMulsDoDonts(line)...)
+	}
+	fmt.Println("Answer for part 2:", calcSum(occurrences))
+}
+
+// readFileLineByLine reads the input file and returns a slice of lines
+func readFileLineByLine(filename string) []string {
+	// Read the file content
+	content, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
+		panic(err)
 	}
-	defer file.Close()
+	// Split lines and return
+	return strings.Split(strings.TrimSpace(string(content)), "\n")
+}
 
-	// Define regex patterns for the instructions
-	mulPattern := regexp.MustCompile(`mul\((\d+),(\d+)\)`)
-	doPattern := regexp.MustCompile(`do\(\)`)
-	dontPattern := regexp.MustCompile(`don't\(\)`)
+// finds all occurrences of mul(X,Y), do(), and don't() in the input
+func findValidMulsDoDonts(input string) [][]string {
+	// Regex to find mul(X,Y), do(), and don't()
+	r := regexp.MustCompile(`(mul\(\d{1,3},\d{1,3}\))|don't\(\)|do\(\)`)
+	return r.FindAllStringSubmatch(input, -1)
+}
 
-	scanner := bufio.NewScanner(file)
-	totalSum := 0
-	mulEnabled := true // Multiplications start enabled
+// extracts numbers from mul(X,Y) and returns their product
+func findProduct(input string) int {
+	// Extract numbers from mul(X,Y) and return their product
+	r := regexp.MustCompile(`\d+`)
+	nums := r.FindAllString(input, -1)
+	x, _ := strconv.Atoi(nums[0])
+	y, _ := strconv.Atoi(nums[1])
+	return x * y
+}
 
-	// Read each line from the input file
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		// Check for do() and don't() instructions
-		if doPattern.MatchString(line) {
-			mulEnabled = true
-		} else if dontPattern.MatchString(line) {
-			mulEnabled = false
-		}
-
-		// If multiplications are enabled, find and process mul(X, Y) instructions
-		if mulEnabled {
-			matches := mulPattern.FindAllStringSubmatch(line, -1)
-			for _, match := range matches {
-				x, err1 := strconv.Atoi(match[1])
-				y, err2 := strconv.Atoi(match[2])
-				if err1 != nil || err2 != nil {
-					fmt.Println("Error converting numbers:", err1, err2)
-					return
-				}
-				totalSum += x * y
-			}
+// calculates the sum of products with do()/don't() conditions
+func calcSum(input [][]string) int {
+	sum := 0
+	active := true // Multiplications are active by default
+	for _, match := range input {
+		if strings.Contains(match[0], "don't") {
+			active = false
+		} else if strings.Contains(match[0], "do(") {
+			active = true
+		} else if active {
+			sum += findProduct(match[0])
 		}
 	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading file:", err)
-		return
-	}
-
-	fmt.Println("Total sum of enabled multiplications:", totalSum)
+	return sum
 }
