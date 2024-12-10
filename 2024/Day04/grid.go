@@ -4,78 +4,127 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
-// Check if "XMAS" starts at a given position in the grid
-func checkWord(grid [][]rune, word string, row, col, rowDir, colDir int) bool {
-	wordLen := len(word)
-	for i := 0; i < wordLen; i++ {
-		r := row + i*rowDir
-		c := col + i*colDir
+// Define the map type
+type Grid map[[2]int]rune
 
-		// Check bounds
-		if r < 0 || r >= len(grid) || c < 0 || c >= len(grid[0]) {
-			return false
-		}
-		// Check character match
-		if grid[r][c] != rune(word[i]) {
-			return false
-		}
+// Helper to convert boolean to integer
+func b2i(b bool) int {
+	if b {
+		return 1
 	}
-	return true
+	return 0
 }
 
-// Function to count all occurrences of "XMAS" in the grid
-func countOccurrences(grid [][]rune, word string) int {
-	count := 0
-	directions := [][2]int{
-		{0, 1},   // Right
-		{0, -1},  // Left
-		{1, 0},   // Down
-		{-1, 0},  // Up
-		{1, 1},   // Diagonal Down-Right
-		{-1, -1}, // Diagonal Up-Left
-		{1, -1},  // Diagonal Down-Left
-		{-1, 1},  // Diagonal Up-Right
-	}
+// Part 1: Check if the "XMAS" pattern exists in all 8 directions
+func xmas(grid Grid, r, c int) int {
+	return b2i(xmasUp(grid, r, c)) +
+		b2i(xmasUpRight(grid, r, c)) +
+		b2i(xmasRight(grid, r, c)) +
+		b2i(xmasDownRight(grid, r, c)) +
+		b2i(xmasDown(grid, r, c)) +
+		b2i(xmasDownLeft(grid, r, c)) +
+		b2i(xmasLeft(grid, r, c)) +
+		b2i(xmasUpLeft(grid, r, c))
+}
 
-	for row := 0; row < len(grid); row++ {
-		for col := 0; col < len(grid[0]); col++ {
-			for _, dir := range directions {
-				if checkWord(grid, word, row, col, dir[0], dir[1]) {
-					count++
-				}
-			}
-		}
-	}
-	return count
+func xmasUp(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'X' && grid[[2]int{r - 1, c}] == 'M' &&
+		grid[[2]int{r - 2, c}] == 'A' && grid[[2]int{r - 3, c}] == 'S'
+}
+
+func xmasUpRight(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'X' && grid[[2]int{r - 1, c + 1}] == 'M' &&
+		grid[[2]int{r - 2, c + 2}] == 'A' && grid[[2]int{r - 3, c + 3}] == 'S'
+}
+
+func xmasRight(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'X' && grid[[2]int{r, c + 1}] == 'M' &&
+		grid[[2]int{r, c + 2}] == 'A' && grid[[2]int{r, c + 3}] == 'S'
+}
+
+func xmasDownRight(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'X' && grid[[2]int{r + 1, c + 1}] == 'M' &&
+		grid[[2]int{r + 2, c + 2}] == 'A' && grid[[2]int{r + 3, c + 3}] == 'S'
+}
+
+func xmasDown(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'X' && grid[[2]int{r + 1, c}] == 'M' &&
+		grid[[2]int{r + 2, c}] == 'A' && grid[[2]int{r + 3, c}] == 'S'
+}
+
+func xmasDownLeft(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'X' && grid[[2]int{r + 1, c - 1}] == 'M' &&
+		grid[[2]int{r + 2, c - 2}] == 'A' && grid[[2]int{r + 3, c - 3}] == 'S'
+}
+
+func xmasLeft(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'X' && grid[[2]int{r, c - 1}] == 'M' &&
+		grid[[2]int{r, c - 2}] == 'A' && grid[[2]int{r, c - 3}] == 'S'
+}
+
+func xmasUpLeft(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'X' && grid[[2]int{r - 1, c - 1}] == 'M' &&
+		grid[[2]int{r - 2, c - 2}] == 'A' && grid[[2]int{r - 3, c - 3}] == 'S'
+}
+
+// Part 2: Check the X-MAS shape
+func xmasPart2(grid Grid, r, c int) bool {
+	return xmasDiagonal1(grid, r, c) && xmasDiagonal2(grid, r, c)
+}
+
+func xmasDiagonal1(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'A' &&
+		((grid[[2]int{r + 1, c - 1}] == 'M' && grid[[2]int{r - 1, c + 1}] == 'S') ||
+			(grid[[2]int{r + 1, c - 1}] == 'S' && grid[[2]int{r - 1, c + 1}] == 'M'))
+}
+
+func xmasDiagonal2(grid Grid, r, c int) bool {
+	return grid[[2]int{r, c}] == 'A' &&
+		((grid[[2]int{r + 1, c + 1}] == 'M' && grid[[2]int{r - 1, c - 1}] == 'S') ||
+			(grid[[2]int{r + 1, c + 1}] == 'S' && grid[[2]int{r - 1, c - 1}] == 'M'))
 }
 
 func main() {
+	// Read the input file
 	file, err := os.Open("input.txt")
 	if err != nil {
-		fmt.Println("Error opening file:", err)
+		fmt.Println("Error reading file:", err)
 		return
 	}
 	defer file.Close()
 
-	// Read the grid
-	var grid [][]rune
+	grid := make(Grid)
 	scanner := bufio.NewScanner(file)
+	row := 0
 	for scanner.Scan() {
-		line := scanner.Text()
-		grid = append(grid, []rune(line))
+		line := strings.TrimSpace(scanner.Text())
+		for col, char := range line {
+			grid[[2]int{row, col}] = char
+		}
+		row++
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading file:", err)
+		fmt.Println("Error reading input:", err)
 		return
 	}
 
-	word := "XMAS"
+	// Part 1
+	part1 := 0
+	for pos := range grid {
+		r, c := pos[0], pos[1]
+		part1 += xmas(grid, r, c)
+	}
+	fmt.Println("Part 1:", part1)
 
-	// Count occurrences
-	totalOccurrences := countOccurrences(grid, word)
-
-	fmt.Println("Total occurrences of 'XMAS':", totalOccurrences)
+	// Part 2
+	part2 := 0
+	for pos := range grid {
+		r, c := pos[0], pos[1]
+		part2 += b2i(xmasPart2(grid, r, c))
+	}
+	fmt.Println("Part 2:", part2)
 }
