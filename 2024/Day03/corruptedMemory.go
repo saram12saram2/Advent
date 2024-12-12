@@ -1,52 +1,57 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"io/ioutil"
+	"log"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 func main() {
-	file, err := os.Open("input.txt")
+	// Read the entire input
+	data, err := ioutil.ReadFile("input.txt")
 	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
+		log.Fatalf("Failed to read input file: %v", err)
 	}
-	defer file.Close()
 
-	// Define a regex pattern to match valid mul(X,Y) instructions
-	pattern := regexp.MustCompile(`mul\((\d+),(\d+)\)`)
+	text := string(data)
 
-	scanner := bufio.NewScanner(file)
-	totalSum := 0
+	// Compile a regex that matches either a valid mul(...) instruction or do() / don't()
+	// For mul: mul(<digits>,<digits>)
+	// For do: do()
+	// For don't: don't()
+	pattern := `(mul\(\d+,\d+\))|(do\(\))|(don't\(\))`
+	re := regexp.MustCompile(pattern)
 
-	for scanner.Scan() {
-		line := scanner.Text()
+	matches := re.FindAllStringIndex(text, -1)
 
-		// Find all matches for the pattern in the current line
-		matches := pattern.FindAllStringSubmatch(line, -1)
+	enabled := true
+	sum := 0
 
-		for _, match := range matches {
-			// Extract X and Y from the match and convert them to integers
-			x, err1 := strconv.Atoi(match[1])
-			y, err2 := strconv.Atoi(match[2])
-			if err1 != nil || err2 != nil {
-				fmt.Println("Error converting numbers:", err1, err2)
-				return
+	for _, match := range matches {
+		token := text[match[0]:match[1]]
+
+		// Check which type of token we got
+		if strings.HasPrefix(token, "mul(") {
+			// Extract the numbers
+			// token format: mul(X,Y)
+			inside := token[4 : len(token)-1] // get the part inside parentheses
+			parts := strings.Split(inside, ",")
+			if len(parts) == 2 {
+				x, errX := strconv.Atoi(parts[0])
+				y, errY := strconv.Atoi(parts[1])
+				if errX == nil && errY == nil && enabled {
+					sum += x * y
+				}
 			}
-
-			// Multiply X and Y and add the result to the total sum
-			totalSum += x * y
+		} else if token == "do()" {
+			enabled = true
+		} else if token == "don't()" {
+			enabled = false
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading file:", err)
-		return
-	}
-
-	// Print the total sum of all valid mul(X,Y) instructions
-	fmt.Println("Total sum of all valid multiplications:", totalSum)
+	fmt.Println(sum)
 }
