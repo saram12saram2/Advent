@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// Run:  go run rule.go input.txt
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
